@@ -1,39 +1,40 @@
-import { useDispatch } from "react-redux";
-import { login } from "../../store/slices/auth.slice";
-import { useLogin } from "../../services/auth.service";
+import { Box, Typography, TextField, Button } from "@mui/material";
 import { useNavigate } from "react-router";
-import { Box, TextField, Button, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { loginSchema } from "../../validators/login.schema";
+import { registerSchema } from "../../validators/login.schema";
+import { useRegister } from "../../services/auth.service";
 
-export default function Login() {
-  const dispatch = useDispatch();
+export default function Register() {
   const navigate = useNavigate();
-  const { mutate } = useLogin();
+  const { mutate } = useRegister();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(loginSchema),
+    resolver: yupResolver(registerSchema),
   });
 
   const doLogin = ({
+    name,
     email,
     password,
   }: {
+    name: string;
     email: string;
     password: string;
   }) => {
     mutate(
       {
+        name,
         email,
         password,
       },
       {
-        onSuccess: (data) => {
-          dispatch(login({ token: data?.data?.token }));
+        onSuccess: () => {
+          alert("Tu cuenta ha sido creada, puedes iniciar sesión");
+          navigate("/");
         },
       }
     );
@@ -51,7 +52,12 @@ export default function Login() {
       component="form"
       onSubmit={handleSubmit(doLogin)}
     >
-      <Typography variant="h4">Iniciar sesión</Typography>
+      <Typography variant="h4">Registrarse</Typography>
+      <TextField {...register("name")} label="Nombre" variant="outlined" />
+      {errors.name && (
+        <Typography color="error">{errors.name.message}</Typography>
+      )}
+
       <TextField {...register("email")} label="Email" variant="outlined" />
       {errors.email && (
         <Typography color="error">{errors.email.message}</Typography>
@@ -66,14 +72,10 @@ export default function Login() {
         <Typography color="error">{errors.password.message}</Typography>
       )}
       <Button variant="contained" type="submit">
-        Iniciar sesión
-      </Button>
-      <Button
-        color="primary"
-        variant="outlined"
-        onClick={() => navigate("/register")}
-      >
         Registrarse
+      </Button>
+      <Button color="primary" variant="outlined" onClick={() => navigate("/")}>
+        Iniciar sesión
       </Button>
     </Box>
   );
